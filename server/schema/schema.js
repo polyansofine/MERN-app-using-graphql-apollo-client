@@ -1,3 +1,5 @@
+//schema.js
+
 const graphql = require("graphql"); //use graphql package
 
 const _ = require("lodash");
@@ -14,7 +16,7 @@ const {
   GraphQLString,
   GraphQLInt,
   GraphQLSchema,
-  GraphQLList
+  GraphQLList,
 } = graphql;
 
 //Defining CarType with its fields.
@@ -29,9 +31,10 @@ const CarType = new GraphQLObjectType({
       type: OwnerType,
       resolve(parent, args) {
         return owners.findById(parent.ownerId);
-      }
-    } //owner
-  })
+        // return _.find(OwnersArray, { id: parent.ownerId });
+      },
+    }, //owner
+  }),
 });
 
 //Defining CarType with its fields.
@@ -46,9 +49,10 @@ const OwnerType = new GraphQLObjectType({
       type: new GraphQLList(CarType),
       resolve(parent, args) {
         return cars.find({ ownerId: parent.id });
-      }
-    }
-  })
+        //return _.filter(CarsArray, { ownerId: parent.id });
+      },
+    },
+  }),
 });
 
 //Defining RootQuery
@@ -67,74 +71,78 @@ const RootQuery = new GraphQLObjectType({
          * With the help of lodash library(_), we are trying to find car with id from 'CarsArray'
          * and returning its required data to calling tool.
          */
-        return cars.findById(args.id);
-      } //resolve function
+        //return _.find(CarsArray, { id: args.id });
+      }, //resolve function
     }, //car query ends here
     owner: {
       type: OwnerType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         return owners.findById(args.id);
-      }
+        // return _.find(OwnersArray, { id: args.id });
+      },
     }, //owners ends here
     cars: {
       type: new GraphQLList(CarType),
       resolve(parent, args) {
         return cars.find({});
-      }
+        //return CarsArray;
+      },
     }, //cars query
     owners: {
       type: new GraphQLList(OwnerType),
       resolve(parent, args) {
         return owners.find({});
-      }
-    }
-  } //fields end here
+        //return OwnersArray;
+      },
+    },
+  }, //fields end here
 });
 
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
   fields: {
     addOwner: {
+      // To add Owner in DB
       type: OwnerType,
       args: {
         name: { type: GraphQLString },
         age: { type: GraphQLInt },
-        gender: { type: GraphQLString }
+        gender: { type: GraphQLString },
       },
       resolve(parent, args) {
         let owner = new owners({
           name: args.name,
           age: args.age,
-          gender: args.gender
+          gender: args.gender,
         });
-        return owner.save();
-      }
-    }, //AddOwner ends here
+        return owner.save(); //create owner data in mlab
+      },
+    },
     addCar: {
       type: CarType,
       args: {
         name: { type: GraphQLString },
         model: { type: GraphQLInt },
         company: { type: GraphQLString },
-        ownerId: { type: GraphQLID }
+        ownerId: { type: GraphQLID },
       },
       resolve(parent, args) {
         let car = new cars({
           name: args.name,
           model: args.model,
           company: args.company,
-          ownerId: args.ownerId
+          ownerId: args.ownerId,
         });
 
         return car.save();
-      }
-    } //addCar
-  } //fields ends here
+      },
+    }, //addCar
+  }, //fields ends here
 });
 
 //exporting 'GraphQLSchema with RootQuery' for GraphqlHTTP middleware.
 module.exports = new GraphQLSchema({
   query: RootQuery,
-  mutation: Mutation
+  mutation: Mutation,
 });

@@ -20,7 +20,8 @@ app.use(cors());
 
 //Please change mongoDB connection as maybe I have deleted this db on mlab when you are using it.
 mongoose.connect(
-  "mongodb://test:test123@ds145434.mlab.com:45434/gql-practice",
+  // "mongodb://test:test123@ds145434.mlab.com:45434/gql-practice",
+  "mongodb+srv://polyansofine:polyansofine@minterblogcluster.l3q4h.mongodb.net/graphQL?retryWrites=true&w=majority",
   { useNewUrlParser: true },
   () => {
     console.log("Connect with DB successfully");
@@ -35,7 +36,7 @@ app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    graphiql: true
+    graphiql: true,
   })
 );
 
